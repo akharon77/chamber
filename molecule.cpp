@@ -10,11 +10,11 @@ Molecule::Molecule(Chamber *chamber, float weight, Vector2f pos, Vector2f vel) :
 void Molecule::update()
 {
     m_pos += m_vel;
-    
-    if (m_pos.x < -EPS || m_pos.x > m_chamber->getWidth() + EPS)
+
+    if (m_pos.x < -EPS || m_pos.x + 2 * getLinearSize() > m_chamber->getWidth())
         m_vel.x = -m_vel.x;
 
-    if (m_pos.y < -EPS || m_pos.y > m_chamber->getHeight() + EPS)
+    if (m_pos.y < -EPS || m_pos.y + 2 * getLinearSize() > m_chamber->getHeight())
         m_vel.y = -m_vel.y;
 }
 
@@ -68,13 +68,12 @@ float Chamber::getHeight() const
 // ========================================== //
 
 CircleMolecule::CircleMolecule(Chamber *chamber, float weight, Vector2f pos, Vector2f vel) :
-    Molecule(chamber, weight, pos, vel)
+    Molecule(chamber, weight, pos, vel),
+    m_rad(getRadiusByWeight(weight)),
+    m_circle(m_rad)
 {
     m_circle.setFillColor(sf::Color::Blue);
-    update();
-
-    CircleMolecule *to_push = new CircleMolecule(*this);
-    m_chamber->addMolecule(to_push);
+    m_chamber->addMolecule(this);
 }
 
 float CircleMolecule::getRadiusByWeight(float weight)
@@ -82,23 +81,14 @@ float CircleMolecule::getRadiusByWeight(float weight)
     return weight * 20;
 }
 
-void CircleMolecule::updateCircle()
-{
-    m_rad = getRadiusByWeight(m_weight);
-    m_circle.setRadius(m_rad);
-    m_circle.setPosition(m_chamber->getPos() + m_pos);
-}
-
 void CircleMolecule::update()
 {
     Molecule::update();
-    m_rad = getRadiusByWeight(m_weight);
-    updateCircle();
+    m_circle.setPosition(m_chamber->getPos() + m_pos);
 }
 
 void CircleMolecule::draw(sf::RenderWindow &window)
 {
-    updateCircle();
     window.draw(m_circle);
 }
 
@@ -170,6 +160,7 @@ Chamber::Chamber(Vector2f pos, float width, float height, float temp) :
     m_rect.setFillColor(sf::Color::Black);
     m_rect.setOutlineColor(sf::Color::White);
     m_rect.setOutlineThickness(3);
+
     updateRect();
 }
 
@@ -196,20 +187,15 @@ void Chamber::updateCollisions()
     int32_t anch1 = m_mols.GetHead();
     Node<Molecule*> node1 = *m_mols.Get(anch1);
 
+    int32_t i = 0;
     while (flag)
     {
         flag = false;
-        int32_t anch2 = m_mols.GetHead();
+        int32_t anch2 = node1.next;
 
-        for (int32_t i = 0; i < m_mols.GetSize(); ++i)
+        for (int32_t j = 0; j < m_mols.GetSize() - i - 1; ++j)
         {
             Node<Molecule*> node2 = *m_mols.Get(anch2);
-
-            if (anch2 == anch1)
-            {
-                anch2 = node2.next;
-                continue;
-            }
 
             bool isColl = handleCollision(node1.val, node2.val);
             if (isColl)
@@ -279,7 +265,6 @@ void Chamber::update()
 
 void Chamber::draw(sf::RenderWindow &window)
 {
-    updateRect();
     window.draw(m_rect);
 
     int32_t anch = m_mols.GetHead();

@@ -12,10 +12,8 @@ int main()
 
     Chamber chamber({50, 35}, 300, 400);
 
-    {
-        CircleMolecule mol1(&chamber, 1, {10, 10}, {0.1, 0.2});
-        CircleMolecule mol2(&chamber, 1, {5, 10}, {0.2, 0.1});
-    }
+    new CircleMolecule(&chamber, 1, {25, 25}, {0.1, 0.1});
+    // CircleMolecule mol2(&chamber, 1, {5, 10}, {0.2, 0.1});
 
     while (window.isOpen())
     {
