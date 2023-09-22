@@ -47,6 +47,7 @@ public:
     virtual void draw(sf::RenderWindow &window) = 0;
 
     virtual Molecule::MoleculeType getType() const = 0;
+    virtual float getLinearSize() const = 0;
 };
 
 class Chamber
@@ -59,17 +60,36 @@ class Chamber
     float    m_temp;
     float    m_prss;
 
-    List<Molecule*> m_mols;
+    BufferList<Molecule*> m_buf_mols;
+    List<Molecule*>       m_mols;
+
+    sf::RectangleShape m_rect;
+
+    void updateRect();
+    void updateMolsPos();
+    void updateCollisions();
+    bool handleCollision(Molecule *mol1, Molecule *mol2);
+
+    bool collideCC(Molecule *mol1, Molecule *mol2);
+    bool collideCR(Molecule *mol1, Molecule *mol2);
+    bool collideRC(Molecule *mol1, Molecule *mol2);
+    bool collideRR(Molecule *mol1, Molecule *mol2);
 
 public:
-    Chamber() = default;
-    Chamber(const Chamber &chamber) = default;
-    Chamber& operator = (const Chamber &chamber) = default;
+    Chamber(Vector2f pos = {0, 0}, float width = 0, float height = 0, float temp = 100);
+
+    Chamber(const Chamber &chamber) = delete;
+    Chamber& operator = (const Chamber &chamber) = delete;
     ~Chamber() = default;
+
+    void update();
+    void draw(sf::RenderWindow &window);
 
     Vector2f getPos()    const;
     float    getWidth()  const;
     float    getHeight() const;
+
+    void addMolecule(Molecule *mol);
 };
 
 // ========================================== //
@@ -93,6 +113,9 @@ public:
     virtual void draw(sf::RenderWindow &window) override;
 
     virtual Molecule::MoleculeType getType() const override;
+    virtual float getLinearSize() const override;
+    
+    virtual void update() override;
 };
 
 // ========================================== //
@@ -116,6 +139,9 @@ public:
     virtual void draw(sf::RenderWindow &window) override;
 
     virtual Molecule::MoleculeType getType() const override;
+    virtual float getLinearSize() const override;
+
+    virtual void update() override;
 };
 
 #endif  // MOLECULE_HPP
