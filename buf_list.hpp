@@ -3,7 +3,7 @@
 
 #include <unistd.h>
 
-#include "node_struct.h"
+#include "node_struct.hpp"
 
 template<typename T>
 class BufferList

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "buf_list.h"
+#include "buf_list.hpp"
 
 template<typename T>
 class List

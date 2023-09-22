@@ -4,7 +4,9 @@
 #include <SFML/Graphics.hpp>
 
 #include "vector2f.hpp"
-#include "chamber.hpp"
+#include "list.hpp"
+
+class Chamber;
 
 class Molecule
 {
@@ -29,7 +31,7 @@ public:
 
     Molecule(const Molecule &rhs)              = default;
     Molecule& operator = (const Molecule &rhs) = default;
-    virtual ~Molecule()                        = 0;
+    ~Molecule()                                = default;
 
     void     setPos(const Vector2f &pos);
     Vector2f getPos() const;
@@ -42,9 +44,32 @@ public:
 
     virtual void update();
 
-    virtual void draw(const sf::RenderWindow &window) = 0;
+    virtual void draw(sf::RenderWindow &window) = 0;
 
     virtual Molecule::MoleculeType getType() const = 0;
+};
+
+class Chamber
+{
+    Vector2f m_pos;
+
+    float    m_width;
+    float    m_height;
+
+    float    m_temp;
+    float    m_prss;
+
+    List<Molecule*> m_mols;
+
+public:
+    Chamber() = default;
+    Chamber(const Chamber &chamber) = default;
+    Chamber& operator = (const Chamber &chamber) = default;
+    ~Chamber() = default;
+
+    Vector2f getPos()    const;
+    float    getWidth()  const;
+    float    getHeight() const;
 };
 
 // ========================================== //
@@ -65,7 +90,7 @@ public:
     CircleMolecule& operator = (const CircleMolecule &rhs) = default;
     ~CircleMolecule()                                      = default;
 
-    virtual void draw(const sf::RenderWindow &window) override;
+    virtual void draw(sf::RenderWindow &window) override;
 
     virtual Molecule::MoleculeType getType() const override;
 };
@@ -88,7 +113,7 @@ public:
     SquareMolecule& operator = (const SquareMolecule &rhs) = default;
     ~SquareMolecule()                                      = default;
 
-    virtual void draw(const sf::RenderWindow &window) override;
+    virtual void draw(sf::RenderWindow &window) override;
 
     virtual Molecule::MoleculeType getType() const override;
 };
