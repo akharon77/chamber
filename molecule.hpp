@@ -6,49 +6,7 @@
 #include "vector2f.hpp"
 #include "list.hpp"
 
-class Chamber;
-
-class Molecule
-{
-protected:
-    enum MoleculeType
-    {
-        CIRCLE,
-        SQUARE
-    };
-
-    Chamber *m_chamber;
-
-    float m_weight;
-
-    Vector2f m_pos;
-    Vector2f m_vel;
-    
-public:
-    Molecule() = delete;
-
-    Molecule(Chamber *chamber, float weight = 0, Vector2f pos = {0, 0}, Vector2f vel = {0, 0});
-
-    Molecule(const Molecule &rhs)              = default;
-    Molecule& operator = (const Molecule &rhs) = default;
-    ~Molecule()                                = default;
-
-    void     setPos(const Vector2f &pos);
-    Vector2f getPos() const;
-
-    void     setVelocity(const Vector2f &vel);
-    Vector2f getVelocity() const;
-
-    void  setWeight(float weight);
-    float getWeight() const;
-
-    virtual void update();
-
-    virtual void draw(sf::RenderWindow &window) = 0;
-
-    virtual Molecule::MoleculeType getType() const = 0;
-    virtual float getLinearSize() const = 0;
-};
+class Molecule;
 
 class Chamber
 {
@@ -94,6 +52,54 @@ public:
 
 // ========================================== //
 
+class Molecule
+{
+    friend class Chamber;
+
+protected:
+    enum MoleculeType
+    {
+        CIRCLE,
+        SQUARE
+    };
+
+    Chamber *m_chamber;
+
+    float m_weight;
+
+    Vector2f m_pos;
+    Vector2f m_vel;
+    
+public:
+    Molecule() = delete;
+
+    Molecule(float weight = 0, Vector2f pos = {0, 0}, Vector2f vel = {0, 0});
+
+    Molecule(const Molecule &rhs)              = default;
+    Molecule& operator = (const Molecule &rhs) = default;
+    ~Molecule()                                = default;
+
+    void setChamber(Chamber *chamber);
+
+    void     setPos(const Vector2f &pos);
+    Vector2f getPos() const;
+
+    void     setVelocity(const Vector2f &vel);
+    Vector2f getVelocity() const;
+
+    void  setWeight(float weight);
+    float getWeight() const;
+
+    virtual void update();
+
+    virtual void draw(sf::RenderWindow &window) = 0;
+
+    virtual Molecule::MoleculeType getType() const = 0;
+    virtual float getLinearSize() const = 0;
+};
+
+// ========================================== //
+
 class CircleMolecule : public Molecule
 {
     float m_rad;
@@ -104,7 +110,7 @@ class CircleMolecule : public Molecule
     void updateCircle();
 
 public:
-    CircleMolecule(Chamber *chamber, float weight = 0, Vector2f pos = {0, 0}, Vector2f vel = {0, 0});
+    CircleMolecule(float weight = 0, Vector2f pos = {0, 0}, Vector2f vel = {0, 0});
 
     CircleMolecule(const CircleMolecule &rhs)              = default;
     CircleMolecule& operator = (const CircleMolecule &rhs) = default;
@@ -130,7 +136,7 @@ class SquareMolecule : public Molecule
     void updateSquare();
 
 public:
-    SquareMolecule(Chamber *chamber, float weight = 0, Vector2f pos = {0, 0}, Vector2f vel = {0, 0});
+    SquareMolecule(float weight = 0, Vector2f pos = {0, 0}, Vector2f vel = {0, 0});
 
     SquareMolecule(const SquareMolecule &rhs)              = default;
     SquareMolecule& operator = (const SquareMolecule &rhs) = default;

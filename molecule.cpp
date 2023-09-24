@@ -1,7 +1,6 @@
 #include "molecule.hpp"
 
-Molecule::Molecule(Chamber *chamber, float weight, Vector2f pos, Vector2f vel) :
-    m_chamber(chamber),
+Molecule::Molecule(float weight, Vector2f pos, Vector2f vel) :
     m_weight(weight),
     m_pos(pos),
     m_vel(vel)
@@ -10,12 +9,11 @@ Molecule::Molecule(Chamber *chamber, float weight, Vector2f pos, Vector2f vel) :
 void Molecule::update()
 {
     m_pos += m_vel;
+}
 
-    if (m_pos.x < -EPS || m_pos.x + 2 * getLinearSize() > m_chamber->getWidth())
-        m_vel.x = -m_vel.x;
-
-    if (m_pos.y < -EPS || m_pos.y + 2 * getLinearSize() > m_chamber->getHeight())
-        m_vel.y = -m_vel.y;
+void Molecule::setChamber(Chamber *chamber)
+{
+    m_chamber = chamber;
 }
 
 void Molecule::setPos(const Vector2f &pos)
@@ -67,24 +65,29 @@ float Chamber::getHeight() const
 
 // ========================================== //
 
-CircleMolecule::CircleMolecule(Chamber *chamber, float weight, Vector2f pos, Vector2f vel) :
-    Molecule(chamber, weight, pos, vel),
+CircleMolecule::CircleMolecule(float weight, Vector2f pos, Vector2f vel) :
+    Molecule(weight, pos, vel),
     m_rad(getRadiusByWeight(weight)),
     m_circle(m_rad)
 {
     m_circle.setFillColor(sf::Color::Blue);
-    m_chamber->addMolecule(this);
+    m_circle.setOrigin(m_rad, m_rad);
 }
 
 float CircleMolecule::getRadiusByWeight(float weight)
 {
-    return weight * 20;
+    return weight * 10;
+}
+
+void CircleMolecule::updateCircle()
+{
+    m_circle.setPosition(m_chamber->getPos() + m_pos);
 }
 
 void CircleMolecule::update()
 {
     Molecule::update();
-    m_circle.setPosition(m_chamber->getPos() + m_pos);
+    updateCircle();
 }
 
 void CircleMolecule::draw(sf::RenderWindow &window)
@@ -104,31 +107,28 @@ float CircleMolecule::getLinearSize() const
 
 // ========================================== //
 
-SquareMolecule::SquareMolecule(Chamber *chamber, float weight, Vector2f pos, Vector2f vel) :
-    Molecule(chamber, weight, pos, vel)
+SquareMolecule::SquareMolecule(float weight, Vector2f pos, Vector2f vel) :
+    Molecule(weight, pos, vel),
+    m_side_len(getSideLenByWeight(weight)),
+    m_square({m_side_len, m_side_len})
 {
     m_square.setFillColor(sf::Color::Red);
-    update();
-
-    SquareMolecule *to_push = new SquareMolecule(*this);
-    m_chamber->addMolecule(to_push);
+    m_square.setOrigin(0.5 * m_side_len, 0.5 * m_side_len);
 }
 
 float SquareMolecule::getSideLenByWeight(float weight)
 {
-    return weight * 0.5;
+    return weight * 20;
 }
 
 void SquareMolecule::updateSquare()
 {
-    m_square.setSize({m_side_len, m_side_len});
     m_square.setPosition(m_chamber->getPos() + m_pos);
 }
 
 void SquareMolecule::update()
 {
     Molecule::update();
-    m_side_len = getSideLenByWeight(m_weight);
     updateSquare();
 }
 
@@ -144,7 +144,7 @@ Molecule::MoleculeType SquareMolecule::getType() const
 
 float SquareMolecule::getLinearSize() const
 {
-    return 1.41 * m_side_len;
+    return 0.5 * m_side_len;
 }
 
 // ========================================== //
@@ -176,28 +176,37 @@ void Chamber::updateMolsPos()
     for (int32_t i = 0; i < m_mols.GetSize(); ++i)
     {
         Node<Molecule*> node = *m_mols.Get(anch);
-        node.val->update();
+        Molecule *mol = node.val;
+
+        mol->update();
+        if (mol->m_pos.x - mol->getLinearSize() < -EPS || mol->m_pos.x + mol->getLinearSize() > m_width)
+            mol->m_vel.x *= -1;
+
+        if (mol->m_pos.y - mol->getLinearSize() < -EPS || mol->m_pos.y + mol->getLinearSize() > m_height)
+            mol->m_vel.y *= -1;;
+    
         anch = node.next;
     }
 }
 
 void Chamber::updateCollisions()
 {
-    bool flag = true;
+    int32_t i = 0;
     int32_t anch1 = m_mols.GetHead();
     Node<Molecule*> node1 = *m_mols.Get(anch1);
 
-    int32_t i = 0;
+    bool flag = true;
     while (flag)
     {
         flag = false;
-        int32_t anch2 = node1.next;
 
+        int32_t anch2 = node1.next;
+        Node<Molecule*> node2 = *m_mols.Get(anch2);
+
+        bool isColl = false;
         for (int32_t j = 0; j < m_mols.GetSize() - i - 1; ++j)
         {
-            Node<Molecule*> node2 = *m_mols.Get(anch2);
-
-            bool isColl = handleCollision(node1.val, node2.val);
+            isColl = handleCollision(node1.val, node2.val);
             if (isColl)
             {
                 delete node1.val;
@@ -207,14 +216,25 @@ void Chamber::updateCollisions()
                 m_mols.Erase(anch2);
 
                 flag = true;
-                anch1 = m_mols.Get(m_mols.GetHead())->prev;
                 break;
             }
             
             anch2 = node2.next;
+            node2 = *m_mols.Get(anch2);
         }
 
-        anch1 = node1.next;
+        if (isColl)
+        {
+            anch1 = m_mols.GetHead();
+            node1 = *m_mols.Get(anch1);
+            i = 0;
+        }
+        else
+        {
+            anch1 = node1.next;
+            node1 = *m_mols.Get(anch1);
+            ++i;
+        }
     }
 }
 
@@ -225,6 +245,8 @@ bool Chamber::handleCollision(Molecule *mol1, Molecule *mol2)
 
     if (mol1->getType() == 0 && mol2->getType() == 0)
         return collideCC(mol1, mol2);
+
+    return false;
 
     // static const bool (Chamber::*)(Molecule*, Molecule*) TABLE[2][2] =
     //     {
@@ -243,12 +265,12 @@ bool Chamber::collideCC(Molecule *mol1, Molecule *mol2)
 {
     if (mol1->getWeight() == 1 && mol2->getWeight() == 1)
     {
-        SquareMolecule tmp
-        (
-            this, 
-            2, 
-            0.5f * (mol1->getPos() + mol2->getPos()),
-            0.5f * (mol1->getVelocity() + mol2->getVelocity())
+        addMolecule(new SquareMolecule
+            {
+                2, 
+                0.5f * (mol1->getPos() + mol2->getPos()),
+                0.5f * (mol1->getVelocity() + mol2->getVelocity())
+            }
         );
 
         return true;
@@ -279,6 +301,7 @@ void Chamber::draw(sf::RenderWindow &window)
 
 void Chamber::addMolecule(Molecule *mol)
 {
+    mol->setChamber(this);
     m_mols.PushBack(mol);
 }
 
