@@ -1,12 +1,20 @@
 *.o
 *.out
+callgrind*
+
+*.csv
+*.xlsx
+*.dat
+*.png
+
 *.d
 *.dd
+
 *.log
 *.ii
+
 vgcore*
-*.bin
-.*.*
 *~
+*.txt
 *.swp
 
