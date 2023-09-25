@@ -78,7 +78,7 @@ CircleMolecule::CircleMolecule(float weight, Vector2f pos, Vector2f vel) :
 
 float CircleMolecule::getRadiusByWeight(float weight)
 {
-    return weight * 10;
+    return 30 - exp(-0.2f * weight + 2.7);
 }
 
 void CircleMolecule::updateCircle()
@@ -120,7 +120,7 @@ SquareMolecule::SquareMolecule(float weight, Vector2f pos, Vector2f vel) :
 
 float SquareMolecule::getSideLenByWeight(float weight)
 {
-    return weight * 20;
+    return 30 - exp(-0.7f * weight + 2.7);
 }
 
 void SquareMolecule::updateSquare()
@@ -175,19 +175,41 @@ void Chamber::updateRect()
 void Chamber::updateMolsPos()
 {
     int32_t anch = m_mols.GetHead();
+    Node<Molecule*> node = *m_mols.Get(anch);
+
     for (int32_t i = 0; i < m_mols.GetSize(); ++i)
     {
-        Node<Molecule*> node = *m_mols.Get(anch);
         Molecule *mol = node.val;
 
         mol->update();
-        if (mol->m_pos.x - mol->getLinearSize() < -EPS || mol->m_pos.x + mol->getLinearSize() > m_width)
-            mol->m_vel.x *= -1;
+        float linear_size = mol->getLinearSize();
 
-        if (mol->m_pos.y - mol->getLinearSize() < -EPS || mol->m_pos.y + mol->getLinearSize() > m_height)
+        if (mol->m_pos.x - linear_size < -EPS)
+        {
+            mol->m_pos.x = linear_size + EPS;
+            mol->m_vel.x *= -1;
+        }
+
+        if (mol->m_pos.x + linear_size > m_width)
+        {
+            mol->m_pos.x = m_width - linear_size - EPS;
+            mol->m_vel.x *= -1;
+        }
+            
+        if (mol->m_pos.y - linear_size < -EPS)
+        {
+            mol->m_pos.y = linear_size + EPS;
             mol->m_vel.y *= -1;;
+        }
     
+        if (mol->m_pos.y + mol->getLinearSize() > m_height)
+        {
+            mol->m_pos.y = m_height - linear_size - EPS;
+            mol->m_vel.y *= -1;;
+        }
+            
         anch = node.next;
+        node = *m_mols.Get(anch);
     }
 }
 
