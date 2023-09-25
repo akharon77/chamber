@@ -65,6 +65,11 @@ float Chamber::getHeight() const
     return m_height;
 }
 
+int32_t Chamber::getPressure() const
+{
+    return m_pressure;
+}
+
 // ========================================== //
 
 CircleMolecule::CircleMolecule(float weight, Vector2f pos, Vector2f vel) :
@@ -177,6 +182,8 @@ void Chamber::updateMolsPos()
     int32_t anch = m_mols.GetHead();
     Node<Molecule*> node = *m_mols.Get(anch);
 
+    m_pressure = 0;
+
     for (int32_t i = 0; i < m_mols.GetSize(); ++i)
     {
         Molecule *mol = node.val;
@@ -188,24 +195,28 @@ void Chamber::updateMolsPos()
         {
             mol->m_pos.x = linear_size + EPS;
             mol->m_vel.x *= -1;
+            ++m_pressure;
         }
 
         if (mol->m_pos.x + linear_size > m_width)
         {
             mol->m_pos.x = m_width - linear_size - EPS;
             mol->m_vel.x *= -1;
+            ++m_pressure;
         }
             
         if (mol->m_pos.y - linear_size < -EPS)
         {
             mol->m_pos.y = linear_size + EPS;
             mol->m_vel.y *= -1;;
+            ++m_pressure;
         }
     
         if (mol->m_pos.y + mol->getLinearSize() > m_height)
         {
             mol->m_pos.y = m_height - linear_size - EPS;
             mol->m_vel.y *= -1;;
+            ++m_pressure;
         }
             
         anch = node.next;
@@ -367,12 +378,14 @@ void Chamber::draw(sf::RenderWindow &window)
     window.draw(m_rect);
 
     int32_t anch = m_mols.GetHead();
+    Node<Molecule*> node = *m_mols.Get(anch);
 
-    for (int32_t i = 0; i < m_mols.GetSize(); ++i)
+    int32_t size = m_mols.GetSize();
+    for (int32_t i = 0; i < size; ++i)
     {
-        Node<Molecule*> node = *m_mols.Get(anch);
         node.val->draw(window);
         anch = node.next;
+        node = *m_mols.Get(anch);
     }
 }
 

@@ -16,7 +16,7 @@ class Chamber
     float    m_height;
 
     float    m_temp;
-    float    m_prss;
+    int32_t  m_pressure;
 
     BufferList<Molecule*> m_buf_mols;
     List<Molecule*>       m_mols;
@@ -43,9 +43,10 @@ public:
     void update();
     void draw(sf::RenderWindow &window);
 
-    Vector2f getPos()    const;
-    float    getWidth()  const;
-    float    getHeight() const;
+    Vector2f getPos()      const;
+    float    getWidth()    const;
+    float    getHeight()   const;
+    int32_t  getPressure() const;
 
     void addMolecule(Molecule *mol);
 };
