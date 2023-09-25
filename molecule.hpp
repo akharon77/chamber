@@ -65,7 +65,7 @@ protected:
 
     Chamber *m_chamber;
 
-    float m_weight;
+    int32_t m_weight;
 
     Vector2f m_pos;
     Vector2f m_vel;
@@ -87,8 +87,8 @@ public:
     void     setVelocity(const Vector2f &vel);
     Vector2f getVelocity() const;
 
-    void  setWeight(float weight);
-    float getWeight() const;
+    void  setWeight(int32_t weight);
+    int32_t getWeight() const;
 
     virtual void update();
 

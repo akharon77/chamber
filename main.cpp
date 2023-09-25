@@ -14,8 +14,10 @@ int main()
 
     chamber.addMolecule(new CircleMolecule(1, {10, 10}, {0.3, 0.2}));
     chamber.addMolecule(new CircleMolecule(1, {10, 100}, {-0.5, 0.1}));
-    chamber.addMolecule(new CircleMolecule(1, {100, 10}, {0.1, 0.3}));
-    chamber.addMolecule(new CircleMolecule(1, {100, 100}, {-0.4, -0.2}));
+    chamber.addMolecule(new SquareMolecule(1, {100, 10}, {0.1, 0.3}));
+    chamber.addMolecule(new SquareMolecule(1, {100, 100}, {-0.4, -0.2}));
+    chamber.addMolecule(new SquareMolecule(1, {150, 150}, {-0.8, -0.2}));
+    chamber.addMolecule(new SquareMolecule(1, {140, 100}, {-0.4, -0.2}));
 
     while (window.isOpen())
     {

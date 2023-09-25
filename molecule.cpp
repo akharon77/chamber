@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "molecule.hpp"
 
 Molecule::Molecule(float weight, Vector2f pos, Vector2f vel) :
@@ -36,12 +38,12 @@ Vector2f Molecule::getVelocity() const
     return m_vel;
 }
 
-void Molecule::setWeight(float weight)
+void Molecule::setWeight(int32_t weight)
 {
     m_weight = weight;
 }
 
-float Molecule::getWeight() const
+int32_t Molecule::getWeight() const
 {
     return m_weight;
 }
@@ -195,18 +197,16 @@ void Chamber::updateCollisions()
     int32_t anch1 = m_mols.GetHead();
     Node<Molecule*> node1 = *m_mols.Get(anch1);
 
-    bool flag = true;
-    while (flag)
-    {
-        flag = false;
+    int32_t size = m_mols.GetSize();
 
+    for (int32_t i = 0; i < size - 1; ++i)
+    {
         int32_t anch2 = node1.next;
         Node<Molecule*> node2 = *m_mols.Get(anch2);
 
-        bool isColl = false;
-        for (int32_t j = 0; j < m_mols.GetSize() - i - 1; ++j)
+        for (int32_t j = 0; j < size - i - 1; ++j)
         {
-            isColl = handleCollision(node1.val, node2.val);
+            bool isColl = handleCollision(node1.val, node2.val);
             if (isColl)
             {
                 delete node1.val;
@@ -215,51 +215,39 @@ void Chamber::updateCollisions()
                 m_mols.Erase(anch1);
                 m_mols.Erase(anch2);
 
-                flag = true;
-                break;
+                return;
             }
             
             anch2 = node2.next;
             node2 = *m_mols.Get(anch2);
         }
 
-        if (isColl)
-        {
-            anch1 = m_mols.GetHead();
-            node1 = *m_mols.Get(anch1);
-            i = 0;
-        }
-        else
-        {
-            anch1 = node1.next;
-            node1 = *m_mols.Get(anch1);
-            ++i;
-        }
+        anch1 = node1.next;
+        node1 = *m_mols.Get(anch1);
     }
 }
 
+typedef bool (Chamber::*func_collide_t)(Molecule* mol1, Molecule* mol2);
+
 bool Chamber::handleCollision(Molecule *mol1, Molecule *mol2)
 {
-    if (len(mol2->getPos() - mol1->getPos()) > mol1->getLinearSize() + mol2->getLinearSize())
+    Vector2f prev_pos1 = mol1->getPos() - mol1->getVelocity();
+    Vector2f prev_pos2 = mol2->getPos() - mol2->getVelocity();
+
+    if (len(mol1->getPos() - mol2->getPos()) > mol1->getLinearSize() + mol2->getLinearSize())
         return false;
 
-    if (mol1->getType() == 0 && mol2->getType() == 0)
-        return collideCC(mol1, mol2);
+    if (len(mol1->getPos() - mol2->getPos()) > len(prev_pos1 - prev_pos2))
+        return false;
 
-    return false;
+    static const func_collide_t TABLE[2][2] =
+        {
+            {&Chamber::collideCC, &Chamber::collideCR},
+            {&Chamber::collideRC, &Chamber::collideRR}
+        };
 
-    // static const bool (Chamber::*)(Molecule*, Molecule*) TABLE[2][2] =
-    //     {
-    //         {collideCC, collideCR},
-    //         {collideRC, collideRR}
-    //     };
-
-    // return TABLE[mol1->getType()][mol2->getType()](mol1, mol2);
+    return (this->*TABLE[mol1->getType()][mol2->getType()])(mol1, mol2);
 }
-
-bool Chamber::collideCR(Molecule *mol1, Molecule *mol2) {}
-bool Chamber::collideRC(Molecule *mol1, Molecule *mol2) {}
-bool Chamber::collideRR(Molecule *mol1, Molecule *mol2) {}
 
 bool Chamber::collideCC(Molecule *mol1, Molecule *mol2)
 {
@@ -277,6 +265,73 @@ bool Chamber::collideCC(Molecule *mol1, Molecule *mol2)
     }
 
     return false;
+}
+
+bool Chamber::collideCR(Molecule *mol1, Molecule *mol2)
+{
+    if (mol1->getWeight() == 1)
+    {
+        addMolecule(new SquareMolecule
+            {
+                mol2->getWeight() + 1, 
+                0.5f * (mol1->getPos() + mol2->getPos()),
+                (mol1->getVelocity() + (float) mol2->getWeight() * mol2->getVelocity()) / (mol2->getWeight() + 1.f)
+            }
+        );
+
+        return true;
+    }
+
+    return false;
+}
+
+bool Chamber::collideRC(Molecule *mol1, Molecule *mol2)
+{
+    if (mol2->getWeight() == 1)
+    {
+        addMolecule(new SquareMolecule
+            {
+                mol1->getWeight() + 1, 
+                0.5f * (mol1->getPos() + mol2->getPos()),
+                (mol2->getVelocity() + (float) mol1->getWeight() * mol1->getVelocity()) / (mol1->getWeight() + 1.f)
+            }
+        );
+
+        return true;
+    }
+
+    return false;
+}
+
+bool Chamber::collideRR(Molecule *mol1, Molecule *mol2)
+{
+    Vector2f mid_pos = 0.5f * (mol1->getPos() + mol2->getPos());
+
+    int32_t wgh1 = mol1->getWeight();
+    int32_t wgh2 = mol2->getWeight();
+
+    float alpha_k = 2 * M_PI / (wgh1 + wgh2 - 1);
+    float curr_alpha = 0;
+    for (int32_t i = 0; i < wgh1 + wgh2 - 1; ++i, curr_alpha += alpha_k)
+    {
+        addMolecule(new CircleMolecule
+            {
+                1, 
+                mid_pos,
+                Vector2f(cos(curr_alpha), sin(curr_alpha))
+            }
+        );
+    }
+    
+    addMolecule(new CircleMolecule
+        {
+            1, 
+            mid_pos,
+            (float) wgh1 * mol1->getVelocity() + (float) wgh2 * mol2->getVelocity()
+        }
+    );
+
+    return true;
 }
 
 void Chamber::update()
