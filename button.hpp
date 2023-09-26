@@ -9,13 +9,12 @@
 
 #include "widget.hpp"
 #include "list.hpp"
-
-using Vector2u = sf::Vector2u;
+#include "vector2f.hpp"
 
 class Button : public Widget
 {
 protected:
-    Vector2u m_pos;
+    Vector2f m_pos;
 
     int32_t m_width;
     int32_t m_height;
@@ -27,11 +26,11 @@ protected:
     Vector2u m_pressed_pos;
     Vector2u m_focused_pos;
 
-    bool checkIn(const Vector2u &pnt) const;
+    bool checkIn(const Vector2f &pnt) const;
 
 public:
 
-    Button(Vector2u pos, int32_t width, int32_t height, sf::Texture texture, Vector2u default_pos, Vector2u pressed_pos, Vector2u focused_pos);
+    Button(Vector2f pos, int32_t width, int32_t height, sf::Texture texture, Vector2u default_pos, Vector2u pressed_pos, Vector2u focused_pos);
 
     virtual void handleEvent(const sf::Event &event)  override;
     virtual void draw(sf::RenderWindow &window) override;

@@ -1,19 +1,19 @@
 #include "chamber_btn_ctrl.hpp"
 
-static const char*    TEMP_TXTRS_PATH      = "temp_texture.png";
-static const int32_t  TEMP_CTRL_BTN_WIDTH  = 149;
-static const int32_t  TEMP_CTRL_BTN_HEIGHT = 70;
-static const Vector2u TEMP_CTRL_DEF_POS    = {0, 0};
+const char*    TEMP_TXTRS_PATH      = "temp_texture.png";
+const int32_t  TEMP_CTRL_BTN_WIDTH  = 57;
+const int32_t  TEMP_CTRL_BTN_HEIGHT = 52;
+const Vector2u TEMP_CTRL_DEF_POS    = {0, 0};
 
-static const char*    PISTON_TXTRS_PATH      = "piston_texture.png";
-static const int32_t  PISTON_CTRL_BTN_WIDTH  = 149;
-static const int32_t  PISTON_CTRL_BTN_HEIGHT = 70;
-static const Vector2u PISTON_CTRL_DEF_POS    = {0, 0};
+const char*    PISTON_TXTRS_PATH      = "piston_texture.png";
+const int32_t  PISTON_CTRL_BTN_WIDTH  = 57;
+const int32_t  PISTON_CTRL_BTN_HEIGHT = 52;
+const Vector2u PISTON_CTRL_DEF_POS    = {0, 0};
 
-static const char*    MOLS_TXTRS_PATH      = "piston_texture.png";
-static const int32_t  MOLS_CTRL_BTN_WIDTH  = 149;
-static const int32_t  MOLS_CTRL_BTN_HEIGHT = 70;
-static const Vector2u MOLS_CTRL_DEF_POS    = {0, 0};
+const char*    MOLS_TXTRS_PATH      = "piston_texture.png";
+const int32_t  MOLS_CTRL_BTN_WIDTH  = 149;
+const int32_t  MOLS_CTRL_BTN_HEIGHT = 70;
+const Vector2u MOLS_CTRL_DEF_POS    = {0, 0};
 
 AssetsManager::AssetsManager()
 {
@@ -37,7 +37,7 @@ const sf::Texture& AssetsManager::getMolsCtrlTexture() const
     return m_mols_textures;
 }
 
-ChamberTemperatureBtnCtrl::ChamberTemperatureBtnCtrl(Vector2u pos, Chamber *chamber, float delta, AssetsManager *assets) :
+ChamberTemperatureBtnCtrl::ChamberTemperatureBtnCtrl(Vector2f pos, Chamber *chamber, float delta, AssetsManager *assets) :
     Button
         (
             pos,
@@ -69,7 +69,7 @@ void ChamberTemperatureBtnCtrl::onPressed()
 void ChamberTemperatureBtnCtrl::onReleased() {};
 void ChamberTemperatureBtnCtrl::onFocused()  {};
 
-ChamberPistonBtnCtrl::ChamberPistonBtnCtrl(Vector2u pos, Chamber *chamber, float delta, AssetsManager *assets) :
+ChamberPistonBtnCtrl::ChamberPistonBtnCtrl(Vector2f pos, Chamber *chamber, float delta, AssetsManager *assets) :
     Button
         (
             pos,
@@ -101,7 +101,7 @@ void ChamberPistonBtnCtrl::onPressed()
 void ChamberPistonBtnCtrl::onReleased() {};
 void ChamberPistonBtnCtrl::onFocused()  {};
 
-ChamberMolsBtnCtrl::ChamberMolsBtnCtrl(Vector2u pos, Chamber *chamber, Molecule::MoleculeType type, int32_t delta, AssetsManager *assets) :
+ChamberMolsBtnCtrl::ChamberMolsBtnCtrl(Vector2f pos, Chamber *chamber, Molecule::MoleculeType type, int32_t delta, AssetsManager *assets) :
     Button
         (
             pos,

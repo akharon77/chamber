@@ -12,17 +12,19 @@ class Chamber
 {
     Vector2f m_pos;
 
-    float    m_piston_height;
-    float    m_width;
-    float    m_height;
+    float m_piston_height;
+    float m_width;
+    float m_height;
 
-    float    m_temperature;
-    int32_t  m_pressure;
+    float m_temperature;
+    float m_pressure;
 
     BufferList<Molecule*> m_buf_mols;
     List<Molecule*>       m_mols;
 
     sf::RectangleShape m_rect;
+
+    int32_t m_cnt_upd;
 
     void updateRect();
     void updateMolsPos();
@@ -44,10 +46,12 @@ public:
     void update();
     void draw(sf::RenderWindow &window);
 
-    Vector2f getPos()         const;
-    float    getWidth()       const;
-    float    getHeight()      const;
-    int32_t  getPressure()    const;
+    Vector2f getPos() const;
+
+    float getWidth()    const;
+    float getHeight()   const;
+    float getPressure() const;
+    float getEnergy();
 
     void updTemperature (float delta);
     void updPiston      (float delta);

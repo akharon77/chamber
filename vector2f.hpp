@@ -5,6 +5,7 @@
 #include <cmath>
 
 using Vector2f = sf::Vector2f;
+using Vector2u = sf::Vector2u;
 
 const float EPS = 1e-6;
 

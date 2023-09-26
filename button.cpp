@@ -1,6 +1,6 @@
 #include "button.hpp"
 
-Button::Button(Vector2u pos, int32_t width, int32_t height, sf::Texture texture, Vector2u default_pos, Vector2u pressed_pos, Vector2u focused_pos) :
+Button::Button(Vector2f pos, int32_t width, int32_t height, sf::Texture texture, Vector2u default_pos, Vector2u pressed_pos, Vector2u focused_pos) :
     m_pos(pos),
     m_width(width),
     m_height(height),
@@ -19,7 +19,7 @@ void Button::draw(sf::RenderWindow &window)
     window.draw(m_sprite);
 }
 
-bool Button::checkIn(const Vector2u &pnt) const
+bool Button::checkIn(const Vector2f &pnt) const
 {
     return m_pos.x <= pnt.x && pnt.x <= m_pos.x + m_width &&
            m_pos.y <= pnt.y && pnt.y <= m_pos.y + m_height;

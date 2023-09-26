@@ -2,6 +2,8 @@
 
 #include "molecule.hpp"
 
+const int32_t CNT_UPD_AVER = 1000;
+
 const float TEMP_K_CONST = 2.1;
 
 Molecule::Molecule(float weight, Vector2f pos, Vector2f vel) :
@@ -67,9 +69,29 @@ float Chamber::getHeight() const
     return m_height;
 }
 
-int32_t Chamber::getPressure() const
+float Chamber::getPressure() const
 {
-    return m_pressure;
+    return m_pressure / m_cnt_upd;
+}
+
+float Chamber::getEnergy()
+{
+    float res = 0;
+
+    int32_t anch = m_mols.GetHead();
+    Node<Molecule*> node = *m_mols.Get(anch);
+
+    for (int32_t i = 0; i < m_mols.GetSize(); ++i)
+    {
+        Molecule *mol = node.val;
+
+        res += 0.5 * mol->m_weight * dot(mol->m_vel, mol->m_vel);
+            
+        anch = node.next;
+        node = *m_mols.Get(anch);
+    }
+
+    return res;
 }
 
 void Chamber::updTemperature(float delta)
@@ -79,7 +101,7 @@ void Chamber::updTemperature(float delta)
 
 void Chamber::updPiston(float delta)
 {
-    m_piston_height += delta;
+    m_piston_height -= delta;
 }
 
 // ========================================== //
@@ -175,7 +197,8 @@ Chamber::Chamber(Vector2f pos, float width, float height, float temperature) :
     m_height        (height),
     m_temperature   (temperature),
     m_buf_mols      (1),
-    m_mols          (&m_buf_mols)
+    m_mols          (&m_buf_mols),
+    m_cnt_upd       (0)
 {
     m_rect.setFillColor(sf::Color::Black);
     m_rect.setOutlineColor(sf::Color::White);
@@ -195,7 +218,12 @@ void Chamber::updateMolsPos()
     int32_t anch = m_mols.GetHead();
     Node<Molecule*> node = *m_mols.Get(anch);
 
-    m_pressure = 0;
+    ++m_cnt_upd;
+    if (m_cnt_upd > CNT_UPD_AVER)
+    {
+        m_cnt_upd = 1;
+        m_pressure = 0;
+    }
 
     for (int32_t i = 0; i < m_mols.GetSize(); ++i)
     {
@@ -210,6 +238,7 @@ void Chamber::updateMolsPos()
         {
             mol->m_pos.x = linear_size + EPS;
             mol->m_vel.x *= -1;
+            m_pressure += abs(mol->m_vel.x) * mol->m_weight;
             is_coll = true;
         }
 
@@ -217,6 +246,7 @@ void Chamber::updateMolsPos()
         {
             mol->m_pos.x = m_width - linear_size - EPS;
             mol->m_vel.x *= -1;
+            m_pressure += abs(mol->m_vel.x) * mol->m_weight;
             is_coll = true;
         }
             
@@ -224,6 +254,7 @@ void Chamber::updateMolsPos()
         {
             mol->m_pos.y = m_piston_height + linear_size + EPS;
             mol->m_vel.y *= -1;;
+            m_pressure += abs(mol->m_vel.y) * mol->m_weight;
             is_coll = true;
         }
     
@@ -231,14 +262,12 @@ void Chamber::updateMolsPos()
         {
             mol->m_pos.y = m_height - linear_size - EPS;
             mol->m_vel.y *= -1;;
+            m_pressure += abs(mol->m_vel.y) * mol->m_weight;
             is_coll = true;
         }
 
         if (is_coll)
-        {
-            ++m_pressure;
             mol->m_vel *= (float) (2 * sqrtf(m_temperature / mol->m_weight) / len(mol->m_vel));
-        }
             
         anch = node.next;
         node = *m_mols.Get(anch);
