@@ -11,6 +11,7 @@ Button::Button(Vector2u pos, int32_t width, int32_t height, sf::Texture texture,
 {
     m_sprite.setTexture(m_texture);
     m_sprite.setTextureRect(sf::IntRect(m_default_pos.x, m_default_pos.y, m_width, m_height));
+    m_sprite.setPosition({m_pos.x, m_pos.y});
 }
 
 void Button::draw(sf::RenderWindow &window)
@@ -40,11 +41,17 @@ void Button::handleEvent(const sf::Event &event)
         m_sprite.setTextureRect(sf::IntRect(m_default_pos.x, m_default_pos.y, m_width, m_height));
         onReleased();
     }
-    else if (event.type == sf::Event::MouseMoved &&
-             checkIn({event.mouseMove.x, event.mouseMove.y}))
+    else if (event.type == sf::Event::MouseMoved)
     {
-        m_sprite.setTextureRect(sf::IntRect(m_focused_pos.x, m_focused_pos.y, m_width, m_height));
-        onFocused();
+        if (checkIn({event.mouseMove.x, event.mouseMove.y}))
+        {
+            m_sprite.setTextureRect(sf::IntRect(m_focused_pos.x, m_focused_pos.y, m_width, m_height));
+            onFocused();
+        }
+        else
+        {
+            m_sprite.setTextureRect(sf::IntRect(m_default_pos.x, m_default_pos.y, m_width, m_height));
+        }
     }
 }
 

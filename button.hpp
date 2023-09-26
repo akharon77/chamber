@@ -14,6 +14,7 @@ using Vector2u = sf::Vector2u;
 
 class Button : public Widget
 {
+protected:
     Vector2u m_pos;
 
     int32_t m_width;

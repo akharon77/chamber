@@ -12,10 +12,11 @@ class Chamber
 {
     Vector2f m_pos;
 
+    float    m_piston_height;
     float    m_width;
     float    m_height;
 
-    float    m_temp;
+    float    m_temperature;
     int32_t  m_pressure;
 
     BufferList<Molecule*> m_buf_mols;
@@ -34,7 +35,7 @@ class Chamber
     bool collideRR(Molecule *mol1, Molecule *mol2);
 
 public:
-    Chamber(Vector2f pos = {0, 0}, float width = 0, float height = 0, float temp = 100);
+    Chamber(Vector2f pos = {0, 0}, float width = 0, float height = 0, float temperature = 100);
 
     Chamber(const Chamber &chamber) = delete;
     Chamber& operator = (const Chamber &chamber) = delete;
@@ -43,10 +44,13 @@ public:
     void update();
     void draw(sf::RenderWindow &window);
 
-    Vector2f getPos()      const;
-    float    getWidth()    const;
-    float    getHeight()   const;
-    int32_t  getPressure() const;
+    Vector2f getPos()         const;
+    float    getWidth()       const;
+    float    getHeight()      const;
+    int32_t  getPressure()    const;
+
+    void updTemperature (float delta);
+    void updPiston      (float delta);
 
     void addMolecule(Molecule *mol);
 };
@@ -58,12 +62,6 @@ class Molecule
     friend class Chamber;
 
 protected:
-    enum MoleculeType
-    {
-        CIRCLE,
-        SQUARE
-    };
-
     Chamber *m_chamber;
 
     int32_t m_weight;
@@ -72,6 +70,12 @@ protected:
     Vector2f m_vel;
     
 public:
+    enum MoleculeType
+    {
+        CIRCLE,
+        SQUARE
+    };
+
     Molecule() = delete;
 
     Molecule(float weight = 0, Vector2f pos = {0, 0}, Vector2f vel = {0, 0});

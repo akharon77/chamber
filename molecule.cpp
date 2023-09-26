@@ -2,6 +2,8 @@
 
 #include "molecule.hpp"
 
+const float TEMP_K_CONST = 2.1;
+
 Molecule::Molecule(float weight, Vector2f pos, Vector2f vel) :
     m_weight(weight),
     m_pos(pos),
@@ -68,6 +70,16 @@ float Chamber::getHeight() const
 int32_t Chamber::getPressure() const
 {
     return m_pressure;
+}
+
+void Chamber::updTemperature(float delta)
+{
+    m_temperature += delta;
+}
+
+void Chamber::updPiston(float delta)
+{
+    m_piston_height += delta;
 }
 
 // ========================================== //
@@ -156,13 +168,14 @@ float SquareMolecule::getLinearSize() const
 
 // ========================================== //
 
-Chamber::Chamber(Vector2f pos, float width, float height, float temp) :
-    m_pos      (pos),
-    m_width    (width),
-    m_height   (height),
-    m_temp     (temp),
-    m_buf_mols (1),
-    m_mols     (&m_buf_mols)
+Chamber::Chamber(Vector2f pos, float width, float height, float temperature) :
+    m_pos           (pos),
+    m_piston_height (0),
+    m_width         (width),
+    m_height        (height),
+    m_temperature   (temperature),
+    m_buf_mols      (1),
+    m_mols          (&m_buf_mols)
 {
     m_rect.setFillColor(sf::Color::Black);
     m_rect.setOutlineColor(sf::Color::White);
@@ -191,32 +204,40 @@ void Chamber::updateMolsPos()
         mol->update();
         float linear_size = mol->getLinearSize();
 
+        bool is_coll = false;
+
         if (mol->m_pos.x - linear_size < -EPS)
         {
             mol->m_pos.x = linear_size + EPS;
             mol->m_vel.x *= -1;
-            ++m_pressure;
+            is_coll = true;
         }
 
         if (mol->m_pos.x + linear_size > m_width)
         {
             mol->m_pos.x = m_width - linear_size - EPS;
             mol->m_vel.x *= -1;
-            ++m_pressure;
+            is_coll = true;
         }
             
-        if (mol->m_pos.y - linear_size < -EPS)
+        if (mol->m_pos.y - linear_size < m_piston_height - EPS)
         {
-            mol->m_pos.y = linear_size + EPS;
+            mol->m_pos.y = m_piston_height + linear_size + EPS;
             mol->m_vel.y *= -1;;
-            ++m_pressure;
+            is_coll = true;
         }
     
         if (mol->m_pos.y + mol->getLinearSize() > m_height)
         {
             mol->m_pos.y = m_height - linear_size - EPS;
             mol->m_vel.y *= -1;;
+            is_coll = true;
+        }
+
+        if (is_coll)
+        {
             ++m_pressure;
+            mol->m_vel *= (float) (2 * sqrtf(m_temperature / mol->m_weight) / len(mol->m_vel));
         }
             
         anch = node.next;

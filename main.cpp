@@ -3,6 +3,7 @@
 #include <SFML/Window/VideoMode.hpp>
 
 #include "molecule.hpp"
+#include "chamber_btn_ctrl.hpp"
 
 const uint32_t SCREEN_WIDTH  = 640; 
 const uint32_t SCREEN_HEIGHT = 480;
@@ -21,6 +22,9 @@ int main()
     chamber.addMolecule(new SquareMolecule(1, {150, 150}, {-6.8, -5.2}));
     chamber.addMolecule(new SquareMolecule(1, {140, 100}, {-7.4, -7.2}));
 
+    AssetsManager assets;
+    ChamberTemperatureBtnCtrl btn_inc({500, 300}, &chamber, 20, &assets);
+
     sf::Clock upd_clock;
 
     while (window.isOpen())
@@ -31,16 +35,20 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            if (event.type == sf::Event::MouseButtonPressed)
+                printf("lol\n");
+            btn_inc.handleEvent(event);
         }
 
         if (upd_clock.getElapsedTime().asMilliseconds() >= UPD_TIME_MS)
         {
             window.clear(sf::Color::Black);
             chamber.update();
-            chamber.draw(window);
             upd_clock.restart();
         }
 
+        btn_inc.draw(window);
+        chamber.draw(window);
         window.display();
     }
 
