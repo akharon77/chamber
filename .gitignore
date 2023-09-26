@@ -5,7 +5,6 @@ callgrind*
 *.csv
 *.xlsx
 *.dat
-*.png
 
 *.d
 *.dd

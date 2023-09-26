@@ -10,9 +10,9 @@ const int32_t  PISTON_CTRL_BTN_WIDTH  = 57;
 const int32_t  PISTON_CTRL_BTN_HEIGHT = 52;
 const Vector2u PISTON_CTRL_DEF_POS    = {0, 0};
 
-const char*    MOLS_TXTRS_PATH      = "piston_texture.png";
-const int32_t  MOLS_CTRL_BTN_WIDTH  = 149;
-const int32_t  MOLS_CTRL_BTN_HEIGHT = 70;
+const char*    MOLS_TXTRS_PATH      = "mols_ctrl_texture.png";
+const int32_t  MOLS_CTRL_BTN_WIDTH  = 57;
+const int32_t  MOLS_CTRL_BTN_HEIGHT = 52;
 const Vector2u MOLS_CTRL_DEF_POS    = {0, 0};
 
 AssetsManager::AssetsManager()
