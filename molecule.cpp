@@ -2,9 +2,12 @@
 
 #include "molecule.hpp"
 
-const int32_t CNT_UPD_AVER = 1000;
+const int32_t CNT_UPD_AVER = 2000;
 
 const float TEMP_K_CONST = 2.1;
+
+const float PISTON_FOOT_WIDTH = 10;
+const float PISTON_HAND_HEIGHT = 5;
 
 Molecule::Molecule(float weight, Vector2f pos, Vector2f vel) :
     m_weight(weight),
@@ -74,6 +77,11 @@ float Chamber::getPressure() const
     return m_pressure / m_cnt_upd;
 }
 
+float Chamber::getPistonHeight() const
+{
+    return m_piston_height;
+}
+
 float Chamber::getEnergy()
 {
     float res = 0;
@@ -97,11 +105,22 @@ float Chamber::getEnergy()
 void Chamber::updTemperature(float delta)
 {
     m_temperature += delta;
+
+    if (m_temperature < 10)
+        m_temperature = 10;
 }
 
 void Chamber::updPiston(float delta)
 {
     m_piston_height -= delta;
+
+    if (m_piston_height > m_height)
+        m_piston_height = m_height;
+
+    if (m_piston_height < PISTON_HAND_HEIGHT)
+        m_piston_height = PISTON_HAND_HEIGHT;
+
+    updatePiston();
 }
 
 // ========================================== //
@@ -159,7 +178,7 @@ SquareMolecule::SquareMolecule(float weight, Vector2f pos, Vector2f vel) :
 
 float SquareMolecule::getSideLenByWeight(float weight)
 {
-    return 30 - exp(-0.7f * weight + 2.7);
+    return 30 - exp(-0.9f * weight + 2.7);
 }
 
 void SquareMolecule::updateSquare()
@@ -192,7 +211,7 @@ float SquareMolecule::getLinearSize() const
 
 Chamber::Chamber(Vector2f pos, float width, float height, float temperature) :
     m_pos           (pos),
-    m_piston_height (0),
+    m_piston_height (PISTON_HAND_HEIGHT),
     m_width         (width),
     m_height        (height),
     m_temperature   (temperature),
@@ -204,13 +223,26 @@ Chamber::Chamber(Vector2f pos, float width, float height, float temperature) :
     m_rect.setOutlineColor(sf::Color::White);
     m_rect.setOutlineThickness(3);
 
+    m_piston_foot.setFillColor(sf::Color::White);
+    m_piston_hand.setFillColor(sf::Color::White);
+
     updateRect();
+    updatePiston();
 }
 
 void Chamber::updateRect()
 {
     m_rect.setPosition(m_pos);
     m_rect.setSize({m_width, m_height});
+}
+
+void Chamber::updatePiston()
+{
+    m_piston_foot.setPosition(m_pos + 0.5f * Vector2f{m_width - PISTON_FOOT_WIDTH, 0});
+    m_piston_foot.setSize({PISTON_FOOT_WIDTH, m_piston_height});
+    
+    m_piston_hand.setPosition(m_pos + Vector2f{0, m_piston_height - PISTON_HAND_HEIGHT});
+    m_piston_hand.setSize({m_width, PISTON_HAND_HEIGHT});
 }
 
 void Chamber::updateMolsPos()
@@ -426,6 +458,8 @@ void Chamber::update()
 void Chamber::draw(sf::RenderWindow &window)
 {
     window.draw(m_rect);
+    window.draw(m_piston_foot);
+    window.draw(m_piston_hand);
 
     int32_t anch = m_mols.GetHead();
     Node<Molecule*> node = *m_mols.Get(anch);

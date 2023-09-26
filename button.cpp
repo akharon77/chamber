@@ -88,3 +88,8 @@ void Panel::handleEvent(const sf::Event &event)
     }
 }
 
+void Panel::add(Widget *wdg)
+{
+    m_wdgs.PushBack(wdg);
+}
+

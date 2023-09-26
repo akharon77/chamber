@@ -29,25 +29,17 @@ const float DELTA_PIST = 5;
 
 const Vector2f BTN_MOLS_CIRC_POS = {50, 480};
 const Vector2f BTN_MOLS_SQR_POS  = {170, 480};
-const int32_t DELTA_MOLS = 5;
+const int32_t DELTA_MOLS = 1;
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "chamber");
 
     Chamber chamber(CHAMBER_POS, CHAMBER_SIZE.x, CHAMBER_SIZE.y);
-    chamber.addMolecule(new CircleMolecule(1, {10, 10}, {10, 10}));
-    chamber.addMolecule(new CircleMolecule(1, {10, 10}, {10, 10}));
-    chamber.addMolecule(new CircleMolecule(1, {10, 10}, {10, 10}));
-    chamber.addMolecule(new CircleMolecule(1, {10, 10}, {10, 10}));
-    chamber.addMolecule(new CircleMolecule(1, {10, 10}, {10, 10}));
-    chamber.addMolecule(new CircleMolecule(1, {10, 10}, {10, 10}));
-    chamber.addMolecule(new CircleMolecule(1, {10, 10}, {10, 10}));
-    chamber.addMolecule(new CircleMolecule(1, {10, 10}, {10, 10}));
-    chamber.addMolecule(new CircleMolecule(1, {10, 10}, {10, 10}));
-    chamber.addMolecule(new CircleMolecule(1, {10, 10}, {10, 10}));
 
     AssetsManager assets;
+    Panel panel;
+
     ChamberTemperatureBtnCtrl btn_temp_inc(BTN_TEMP_INC_POS, &chamber,  DELTA_TEMP, &assets);
     ChamberTemperatureBtnCtrl btn_temp_dec(BTN_TEMP_DEC_POS, &chamber, -DELTA_TEMP, &assets);
 
@@ -56,6 +48,13 @@ int main()
 
     ChamberMolsBtnCtrl btn_mols_circ(BTN_MOLS_CIRC_POS, &chamber, Molecule::MoleculeType::CIRCLE, DELTA_MOLS, &assets);
     ChamberMolsBtnCtrl btn_mols_sqr(BTN_MOLS_SQR_POS, &chamber, Molecule::MoleculeType::SQUARE, DELTA_MOLS, &assets);
+
+    panel.add(&btn_temp_inc);
+    panel.add(&btn_temp_dec);
+    panel.add(&btn_pist_inc);
+    panel.add(&btn_pist_dec);
+    panel.add(&btn_mols_circ);
+    panel.add(&btn_mols_sqr);
 
     sf::Clock upd_clock;
     sf::Clock plot_clock;
@@ -71,20 +70,11 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
-
-            btn_temp_inc.handleEvent(event);
-            btn_temp_dec.handleEvent(event);
-
-            btn_pist_inc.handleEvent(event);
-            btn_pist_dec.handleEvent(event);
-
-            btn_mols_circ.handleEvent(event);
-            btn_mols_sqr.handleEvent(event);
+            panel.handleEvent(event);
         }
 
         if (upd_clock.getElapsedTime().asMilliseconds() >= UPD_TIME_MS)
         {
-            window.clear(sf::Color::Black);
             chamber.update();
             upd_clock.restart();
         }
@@ -96,14 +86,9 @@ int main()
             plot_clock.restart();
         }
 
-        btn_temp_inc.draw(window);
-        btn_temp_dec.draw(window);
+        window.clear(sf::Color::Black);
 
-        btn_pist_inc.draw(window);
-        btn_pist_dec.draw(window);
-
-        btn_mols_circ.draw(window);
-        btn_mols_sqr.draw(window);
+        panel.draw(window);
 
         chamber.draw(window);
 

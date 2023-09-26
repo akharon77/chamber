@@ -141,7 +141,7 @@ void ChamberMolsBtnCtrl::onPressed()
                     new CircleMolecule
                     {
                         1,
-                        0.5f * Vector2f{m_chamber->getWidth(), m_chamber->getHeight()},
+                        0.5f * Vector2f{m_chamber->getWidth(), m_chamber->getHeight() - m_chamber->getPistonHeight()},
                         vel
                     }
                 );
@@ -152,7 +152,7 @@ void ChamberMolsBtnCtrl::onPressed()
                     new SquareMolecule 
                     {
                         1,
-                        0.5f * Vector2f{m_chamber->getWidth(), m_chamber->getHeight()},
+                        0.5f * Vector2f{m_chamber->getWidth(), m_chamber->getHeight() - m_chamber->getPistonHeight()},
                         vel
                     }
                 );

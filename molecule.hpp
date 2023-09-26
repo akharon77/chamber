@@ -24,9 +24,13 @@ class Chamber
 
     sf::RectangleShape m_rect;
 
+    sf::RectangleShape m_piston_foot;
+    sf::RectangleShape m_piston_hand;
+
     int32_t m_cnt_upd;
 
     void updateRect();
+    void updatePiston();
     void updateMolsPos();
     void updateCollisions();
     bool handleCollision(Molecule *mol1, Molecule *mol2);
@@ -48,9 +52,10 @@ public:
 
     Vector2f getPos() const;
 
-    float getWidth()    const;
-    float getHeight()   const;
-    float getPressure() const;
+    float getWidth()        const;
+    float getHeight()       const;
+    float getPressure()     const;
+    float getPistonHeight() const;
     float getEnergy();
 
     void updTemperature (float delta);
